@@ -1,25 +1,29 @@
 #version 330 core
 
 uniform float levels;
-uniform bool racist_filter;
+uniform bool bnw;
 uniform vec2 u_resolution;
 uniform sampler2D tex;
+uniform float pixel_size;
 
 void main(){
 	vec2 uv = gl_FragCoord.xy / u_resolution.xy;
 
-	vec4 color = texture(tex, uv);
-	float greyscale = max(color.r, max(color.g, color.b));
+	vec2 coord = floor(gl_FragCoord.xy / pixel_size) * pixel_size;
+    vec2 new_uv = coord / u_resolution.xy;
 
-	float lower = floor(greyscale * levels) / levels;
-	float lowerDiff = abs(greyscale - lower);
-	float upper = ceil(greyscale * levels) / levels;
-	float upperDiff = abs(upper - greyscale);
+	vec4 color = texture(tex, new_uv);
+	float greyscale = max(color.r, max(color.g, color.b));
+	float avg = (color.r + color.g + color.b) / 3.0;
+	float lower = floor(avg * levels) / levels;
+	float lowerDiff = abs(avg - lower);
+	float upper = ceil(avg * levels) / levels;
+	float upperDiff = abs(upper - avg);
 
 	float level = lowerDiff <= upperDiff ? lower : upper;
-	float adjustment = level / greyscale;
+	float adjustment = level / avg;
 
-	if(racist_filter){
+	if(bnw){
 		gl_FragColor = vec4(color.r * adjustment, color.r * adjustment, color.r * adjustment, 1.0);
 	}else{
 		gl_FragColor = vec4(color.rgb * adjustment, 1.0);

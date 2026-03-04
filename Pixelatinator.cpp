@@ -196,6 +196,7 @@ int main() {
 	int levels = 16;
 	static char tex_path[256];
 	bool bnw = false;
+	int pixel_size = 1;
 
 	while (!glfwWindowShouldClose(window)) {
 		ImGui_ImplOpenGL3_NewFrame();
@@ -204,6 +205,7 @@ int main() {
 
 		ImGui::Begin("tweak panel");
 		ImGui::DragInt("Levels: ", &levels, 1.0, 0, 24);
+		ImGui::DragInt("Pixelation: ", &pixel_size, 1.0, 1, 16);
 		ImGui::InputText("texture path: ", tex_path, (size_t)255);
 		if (ImGui::Button("Apply texture")) {
 			Initialize_texture(tex_path, &ID, data);
@@ -213,11 +215,11 @@ int main() {
 		if (ImGui::Button("Black'n White")) {
 			glUseProgram(shader_program);
 			if (bnw) {
-				glUniform1i(glGetUniformLocation(shader_program, "racist_filter"), 0);
+				glUniform1i(glGetUniformLocation(shader_program, "bnw"), 0);
 				bnw = false;
 			}
 			else {
-				glUniform1i(glGetUniformLocation(shader_program, "racist_filter"), 1);
+				glUniform1i(glGetUniformLocation(shader_program, "bnw"), 1);
 				bnw = true;
 			}
 		}
@@ -228,7 +230,8 @@ int main() {
 
 		glUseProgram(shader_program);
 		glUniform2f(glGetUniformLocation(shader_program, "u_resolution"), (float)screenwidth, (float)screenheight);
-		glUniform1f(glGetUniformLocation(shader_program, "levels"), levels);
+		glUniform1f(glGetUniformLocation(shader_program, "levels"), (float)levels);
+		glUniform1f(glGetUniformLocation(shader_program, "pixel_size"), (float)pixel_size);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, ID);
 		glBindVertexArray(VAO);
