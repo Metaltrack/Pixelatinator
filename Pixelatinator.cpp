@@ -193,10 +193,11 @@ int main() {
 	//---------- Ze Loop -------------------//
 	std::cout << "ahhh shit.. Here we go again!" << std::endl;
 
-	int levels = 16;
+	float levels = 16.0;
 	static char tex_path[256];
 	bool bnw = false;
-	int pixel_size = 1;
+	bool old_posterizer = false;
+	float pixel_size = 1.0;
 
 	while (!glfwWindowShouldClose(window)) {
 		ImGui_ImplOpenGL3_NewFrame();
@@ -204,8 +205,8 @@ int main() {
 		ImGui::NewFrame();
 
 		ImGui::Begin("tweak panel");
-		ImGui::DragInt("Levels: ", &levels, 1.0, 0, 24);
-		ImGui::DragInt("Pixelation: ", &pixel_size, 1.0, 1, 16);
+		ImGui::DragFloat("Levels: ", &levels, 0.02, 0, 24);
+		ImGui::DragFloat("Pixelation: ", &pixel_size, 0.02, 1, 16);
 		ImGui::InputText("texture path: ", tex_path, (size_t)255);
 		if (ImGui::Button("Apply texture")) {
 			Initialize_texture(tex_path, &ID, data);
@@ -223,6 +224,19 @@ int main() {
 				bnw = true;
 			}
 		}
+		ImGui::Text("DEBUG>>");
+		if (ImGui::Button("use_old_posterzation")) {
+			glUseProgram(shader_program);
+			if (old_posterizer) {
+				old_posterizer = false;
+				glUniform1i(glGetUniformLocation(shader_program, "use_old_posterizer"), false);
+			}
+			else {
+				old_posterizer = true;
+				glUniform1i(glGetUniformLocation(shader_program, "use_old_posterizer"), true);
+			}
+		}
+		ImGui::Text("OLD_POSTERIZER: %d", old_posterizer);
 		ImGui::End();
 
 		glClearColor(0.0, 0.0, 0.0, 1.0);
